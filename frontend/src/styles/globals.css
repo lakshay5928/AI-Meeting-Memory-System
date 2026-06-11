@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #050508;
+    color: #e8e8f0;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0a0a12; }
+  ::-webkit-scrollbar-thumb { background: #2a2a42; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3d3d5c; }
+
+  ::selection { background: rgba(92, 124, 250, 0.3); color: #fff; }
+}
+
+@layer components {
+  .glass {
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .glass-strong {
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+
+  .glow-brand {
+    box-shadow: 0 0 40px rgba(92, 124, 250, 0.25);
+  }
+
+  .glow-brand-sm {
+    box-shadow: 0 0 20px rgba(92, 124, 250, 0.15);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, #748ffc 0%, #5c7cfa 50%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-warm {
+    background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-xl font-body font-medium text-sm
+           bg-brand-600 hover:bg-brand-500 text-white transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 focus:ring-offset-dark-900
+           disabled:opacity-50 disabled:cursor-not-allowed active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-xl font-body font-medium text-sm
+           glass hover:border-white/20 text-gray-200 hover:text-white transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-dark-900
+           disabled:opacity-50 disabled:cursor-not-allowed active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-body font-medium text-sm
+           text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-150
+           focus:outline-none focus:ring-2 focus:ring-white/10
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl bg-dark-700 border border-white/10
+           text-white placeholder-gray-500 text-sm font-body
+           focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/50
+           transition-all duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .card {
+    @apply glass rounded-2xl p-5 transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply card hover:border-white/15 hover:bg-white/[0.06] cursor-pointer;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-blue  { @apply badge bg-blue-500/15  text-blue-400  border border-blue-500/20; }
+  .badge-green { @apply badge bg-green-500/15 text-green-400 border border-green-500/20; }
+  .badge-amber { @apply badge bg-amber-500/15 text-amber-400 border border-amber-500/20; }
+  .badge-red   { @apply badge bg-red-500/15   text-red-400   border border-red-500/20; }
+  .badge-purple{ @apply badge bg-purple-500/15 text-purple-400 border border-purple-500/20; }
+  .badge-gray  { @apply badge bg-gray-500/15  text-gray-400  border border-gray-500/20; }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400
+           hover:text-white hover:bg-white/5 transition-all duration-150 cursor-pointer;
+  }
+
+  .sidebar-link.active {
+    @apply text-white bg-brand-600/20 border border-brand-500/20;
+  }
+
+  .page-header {
+    @apply text-2xl font-display tracking-wide text-white mb-1;
+  }
+
+  .section-title {
+    @apply text-lg font-semibold text-white mb-4;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-gray-300 mb-1.5;
+  }
+
+  .error-text {
+    @apply text-xs text-red-400 mt-1;
+  }
+
+  .divider {
+    @apply border-t border-white/8;
+  }
+
+  .skeleton {
+    @apply animate-pulse bg-white/5 rounded-lg;
+  }
+
+  .status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+}
+
+/* Noise texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* Animated grid background */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(92,124,250,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(92,124,250,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Particle canvas */
+.particle-bg { position: absolute; inset: 0; overflow: hidden; }
+
+/* Loading spinner */
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid rgba(92,124,250,0.2);
+  border-top-color: #5c7cfa;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Prose for transcription */
+.prose-dark {
+  color: #c8c8d8;
+  line-height: 1.8;
+  font-size: 0.9375rem;
+}
+.prose-dark strong { color: #fff; }
+.prose-dark p { margin-bottom: 1rem; }
