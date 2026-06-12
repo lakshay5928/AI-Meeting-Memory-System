@@ -1,5 +1,4 @@
 import { Queue, Worker, Job } from 'bullmq'
-import Redis from 'ioredis'
 import { config } from '../config'
 import { Meeting, TranscriptSegment, Summary, ActionItem, User } from '../database/models'
 import { transcribeAudio, generateSummary, getEmbedding } from '../integrations/openai'
@@ -8,52 +7,37 @@ import fs from 'fs'
 import path from 'path'
 import https from 'https'
 
-const connection = { url: config.redis.url }
+const connection = {
+  url: config.redis.url,
+  maxRetriesPerRequest: null as any,
+  enableOfflineQueue: false,
+  lazyConnect: true,
+}
 
 // ─── Queue definition ────────────────────────────────────────
-export let transcriptionQueue: Queue | null = null
+export let transcriptionQueue: InstanceType<typeof Queue> | null = null
+transcriptionQueue = new Queue('transcription', {
+  connection,
+  defaultJobOptions: { attempts: 3, backoff: { type: 'exponential', delay: 5000 } },
+}) as InstanceType<typeof Queue>
 
 // ─── Worker ──────────────────────────────────────────────────
-export async function startWorker() {
-  if (!config.redis.url || config.redis.url.includes('your-db.upstash.io')) {
-    console.warn('⚠️ Redis is not configured; skipping transcription worker.')
-    return null
-  }
+export function startWorker() {
+  const worker = new Worker('transcription', processJob, {
+    connection,
+    concurrency: 2,
+    limiter: { max: 5, duration: 60_000 },
+  })
 
-  try {
-    const probe = new Redis(config.redis.url, {
-      lazyConnect: true,
-      maxRetriesPerRequest: 1,
-      retryStrategy: () => null,
-      connectTimeout: 1000,
-      enableReadyCheck: false,
-      reconnectOnError: () => false,
-    })
-    probe.on('error', () => {})
-    await probe.ping()
-    await probe.quit()
+  worker.on('completed', (job) => {
+    console.log(`✅ Job ${job.id} (${job.name}) completed`)
+  })
+  worker.on('failed', (job, err) => {
+    console.error(`❌ Job ${job?.id} failed:`, err.message)
+  })
 
-    transcriptionQueue = new Queue('transcription', { connection })
-
-    const worker = new Worker('transcription', processJob, {
-      connection,
-      concurrency: 2,
-      limiter: { max: 5, duration: 60_000 },
-    })
-
-    worker.on('completed', (job) => {
-      console.log(`✅ Job ${job.id} (${job.name}) completed`)
-    })
-    worker.on('failed', (job, err) => {
-      console.error(`❌ Job ${job?.id} failed:`, err.message)
-    })
-
-    console.log('🔄 Transcription worker started')
-    return worker
-  } catch (err) {
-    console.warn('⚠️ Redis unavailable; transcription worker is disabled:', err)
-    return null
-  }
+  console.log('🔄 Transcription worker started')
+  return worker
 }
 
 // ─── Job processor ───────────────────────────────────────────
@@ -88,7 +72,7 @@ async function processJob(job: Job) {
       endTime:    seg.end,
       confidence: seg.confidence,
     }))
-    await TranscriptSegment.insertMany(segmentDocs)
+    const savedSegments = await TranscriptSegment.insertMany(segmentDocs)
 
     meeting.status = 'transcribed'
     await meeting.save()
@@ -109,8 +93,8 @@ async function processJob(job: Job) {
       aiVersion: '1',
     })
 
-    meeting.summaryId  = savedSummary._id as any
-    meeting.transcriptId = segmentDocs[0]?._id as any
+    meeting.summaryId    = savedSummary._id as any
+    meeting.transcriptId = savedSegments[0]?._id as any
     meeting.status = 'summarized'
     await meeting.save()
 

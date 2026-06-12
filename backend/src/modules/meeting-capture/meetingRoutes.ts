@@ -204,6 +204,11 @@ router.post('/:id/upload', protect, upload.single('recording'), async (req: Auth
     await meeting.save()
 
     // Queue job
+    if (!transcriptionQueue) {
+      meeting.status = 'draft'
+      await meeting.save()
+      return badRequest(res, 'Transcription queue unavailable. Check Redis configuration.')
+    }
     await transcriptionQueue.add('transcribe', {
       meetingId:    meeting._id.toString(),
       recordingUrl: url,

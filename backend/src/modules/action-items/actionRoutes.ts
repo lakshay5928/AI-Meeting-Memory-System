@@ -101,6 +101,7 @@ router.post('/transcriptsegment', protect, async (req: AuthRequest, res: Respons
     const meeting = await Meeting.findOne({ _id: meetingId, organization: req.user!.organization })
     if (!meeting) return notFound(res, 'Meeting not found.')
     if (!meeting.recordingUrl) return badRequest(res, 'No recording uploaded for this meeting.')
+    if (!transcriptionQueue) return badRequest(res, 'Transcription service unavailable. Check Redis configuration.')
 
     meeting.status = 'processing'
     await meeting.save()
