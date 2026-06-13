@@ -32,7 +32,6 @@ api.interceptors.response.use(
     } else if (status >= 500) {
       toast.error('Server error. Please try again later.')
     } else if (status !== 400 && status !== 422) {
-      // 400/422 shown inline via form errors
       toast.error(message)
     }
 

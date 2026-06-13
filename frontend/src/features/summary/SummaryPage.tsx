@@ -17,8 +17,13 @@ export default function SummaryPage() {
     queryKey: ['summary', id],
     queryFn: () => api.get(`/meeting/${id}/summary`).then((r) => r.data.data),
     enabled: !!id,
-    onSuccess: (d) => setEditContent(d.content),
   })
+
+  // set editContent when summary loads
+  const handleEditStart = () => {
+    setEditContent(summary?.content || '')
+    setEditing(true)
+  }
 
   const saveMutation = useMutation({
     mutationFn: () =>
@@ -46,7 +51,7 @@ export default function SummaryPage() {
           )}
         </div>
         {summary && !editing && (
-          <button onClick={() => setEditing(true)} className="btn-ghost text-xs">
+          <button onClick={handleEditStart} className="btn-ghost text-xs">
             <Edit2 size={14} /> Correct
           </button>
         )}
@@ -91,8 +96,7 @@ export default function SummaryPage() {
                     className="btn-primary text-sm">
                     {saveMutation.isPending ? <span className="spinner" /> : <><Save size={14} /> Save Correction</>}
                   </button>
-                  <button onClick={() => { setEditing(false); setEditContent(summary.content) }}
-                    className="btn-secondary text-sm">Cancel</button>
+                  <button onClick={() => setEditing(false)} className="btn-secondary text-sm">Cancel</button>
                 </div>
               </>
             ) : (
@@ -105,7 +109,7 @@ export default function SummaryPage() {
             <div className="card p-5">
               <h2 className="section-title">Key Points</h2>
               <ul className="space-y-2">
-                {summary.keyPoints.map((kp, i) => (
+                {summary.keyPoints.map((kp: string, i: number) => (
                   <li key={i} className="flex gap-3 text-sm text-gray-300">
                     <CheckCircle size={16} className="text-green-400 flex-shrink-0 mt-0.5" />
                     {kp}
@@ -120,7 +124,7 @@ export default function SummaryPage() {
             <div className="card p-5">
               <h2 className="section-title">Decisions Made</h2>
               <ul className="space-y-2">
-                {summary.decisions.map((d, i) => (
+                {summary.decisions.map((d: string, i: number) => (
                   <li key={i} className="flex gap-3 text-sm text-gray-300">
                     <span className="w-5 h-5 rounded-full bg-brand-600/30 text-brand-400 text-xs flex items-center justify-center flex-shrink-0 font-medium">
                       {i + 1}
